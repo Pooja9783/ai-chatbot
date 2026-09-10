@@ -1,24 +1,19 @@
-const Conversertion = require('../model/converstions.model');
+const mongoose = require('mongoose');
+const Conversations = require('../model/conversation.model');
 
-const conversertion = async (req, res) => {
+const conversation = async (req, res) => {
     try {
         // Get userId from authenticated user
         const userId = req.user.userId
 
-        console.log("req.user:", req.user);
-        console.log("userId:", req.user.userId);
-
-
         // Get title from request body
         const title = req.body.title
         // create converstion
-        const userConverstion = await Conversertion.create({
+        const userConverstion = await Conversations.create({
             userId,
             title,
             messages: []
         })
-
-        console.log(userConverstion)
 
         if (!userConverstion) {
             return res.status(403).json({
@@ -28,7 +23,7 @@ const conversertion = async (req, res) => {
 
 
         // return response
-        return res.status(200).json({
+        return res.status(201).json({
             message: "Posted message successfully",
             userConverstion
         })
@@ -41,38 +36,36 @@ const conversertion = async (req, res) => {
 }
 
 
-const conversertionWithId = async (req, res) => {
+const conversationWithId = async (req, res) => {
     try {
-        const conversertionId = req.params.id
+        const conversationId = req.params.id
         const userId = req.user.userId
         const content = req.body.content
 
 
-        const conversertion = await Conversertion.findOne({
-            _id: conversertionId,
+        const conversation = await Conversations.findOne({
+            _id: conversationId,
             userId,
-            messages: [
 
-            ]
         })
 
-        if (!conversertion) {
+        if (!conversation) {
             return res.status(404).json({
-                message: "Conversertion not found"
+                message: "conversation not found"
             })
         }
 
-        conversertion.messages.push({
+        conversation.messages.push({
             role: "user",
             content
         })
 
-        await conversertion.save()
+        await conversation.save()
 
 
         return res.status(200).json({
             message: "Messages added successfully",
-            conversertion
+            conversation
         })
 
 
@@ -83,5 +76,93 @@ const conversertionWithId = async (req, res) => {
     }
 }
 
+const getConversation = async (req, res) => {
+    try {
+        const userId = req.user.userId
 
-module.exports = { conversertion, conversertionWithId }
+
+        const conversations = await Conversations.find({ userId }).sort({ updateAt: -1 })
+
+        return res.status(200).json({
+            conversations
+        })
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Something went wrong"
+        });
+
+
+    }
+}
+
+
+const getConversationWithId = async (req, res) => {
+    try {
+        const userId = req.user.userId
+        const conversationId = req.params.id
+
+        if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+            return res.status(404).json({
+                message: "Conversation not found"
+            });
+        }
+
+
+        const conversation = await Conversations.findOne({ _id: conversationId, userId })
+
+        if (!conversation) {
+            return res.status(404).json({
+                message: "Conversation not found"
+            })
+        }
+
+        return res.status(200).json({
+            conversation
+        })
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Something went wrong"
+        });
+    }
+}
+
+const deleteConversation = async (req, res) => {
+    try {
+
+        const userId = req.user.userId
+        const conversationId = req.params.id
+
+        const conversation = await Conversations.findOneAndDelete({
+            _id: conversationId,
+            userId
+        })
+
+        if (!conversation) {
+            return res.status(404).json({
+                message: "Conversation Not Found"
+            })
+        }
+
+        return res.status(200).json({
+            message: "Delete conversation successfully"
+        })
+
+    }
+    catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Something went wrong"
+        })
+
+    }
+}
+
+
+module.exports = { conversation, conversationWithId, getConversation, getConversationWithId, deleteConversation }

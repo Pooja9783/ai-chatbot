@@ -1,4 +1,3 @@
-const express = require('express')
 const jwt = require('jsonwebtoken')
 
 
@@ -14,7 +13,12 @@ const authMiddleware = async (req, res, next) => {
         }
 
         // 3. extract Bearer token
-        const token = authHeader.split(" ")[1]
+        const [scheme, token] = authHeader.split(" ")
+
+        if (scheme !== 'Bearer' || !token) {
+            return res.status(401).json({ message: "Invalid authorization format" })
+
+        }
 
         // 4. Verify + decode the token
         const decode = jwt.verify(token, process.env.JWT_SECRET)
