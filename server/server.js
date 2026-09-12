@@ -11,14 +11,12 @@ const chatRoutes = require('./routes/chat.routes')
 
 const app = express()
 
-// 2. Define Allowed Origins cleanly
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  process.env.FRONTEND_URL // Will safely include production URL if defined
-].filter(Boolean); // Removes undefined values if FRONTEND_URL isn't set yet
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
-// 3. Single, robust CORS setup
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -38,8 +36,6 @@ app.use(
 app.use(express.json());
 
 
-
-
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -48,19 +44,9 @@ app.get("/health", (req, res) => {
   })
 })
 
-
-
-
-console.log(
-  "OpenRouter key loaded:",
-  !!process.env.OPEN_ROUTER_API_KEY
-);
-
 app.use("/api/auth", authRoutes)
 app.use("/api/conversations", conversationRouter);
 app.use("/api/chat", chatRoutes);
-
-
 
 
 const PORT = process.env.PORT || 5000
