@@ -27,7 +27,7 @@ function MainChat() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                     Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ title }),
             }
@@ -66,7 +66,7 @@ function MainChat() {
             }
 
             const response = await fetch(
-                "https://ai-chatbot-nt2h.onrender.com/api/chat",
+                "https://chatbot-ai-api-owhv.onrender.com/api/chat",
                 {
                     method: "POST",
                     headers: {
