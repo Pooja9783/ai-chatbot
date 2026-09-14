@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/auth/me", {
+        const response = await fetch("https://chatbot-ai-api-owhv.onrender.com/api/auth/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await fetch("http://localhost:5000/api/auth/login", {
+    const response = await fetch("https://chatbot-ai-api-owhv.onrender.com/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
 
   const register = async (name, email, password) => {
-    const response = await fetch(`http://localhost:5000/api/auth/register`, {
+    const response = await fetch(`https://chatbot-ai-api-owhv.onrender.com/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: name, email, password }),
