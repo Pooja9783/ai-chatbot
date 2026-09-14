@@ -5,6 +5,13 @@ import ChatInput from "./ChatInput";
 import { useAuth } from "../context/AuthContext";
 import Header from "./Header";
 
+const PRESET_QUESTIONS = [
+    "Explain React hooks",
+    "What is RAG?",
+    "How does Node.js event loop work?",
+    "Explain system design basics",
+];
+
 function MainChat() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,7 +27,7 @@ function MainChat() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ title }),
             }
