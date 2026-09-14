@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useAuth } from "./context/AuthContext";
 import AuthModal from "./components/AuthModal";
 import MainChat from "./components/MainChat"

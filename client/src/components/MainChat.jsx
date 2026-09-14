@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PresetQuestions from "./PresetQuestions";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { useAuth } from "../context/AuthContext";
 import Header from "./Header";
+import Sidebar from "./Sidebar";
+
 
 const PRESET_QUESTIONS = [
     "Explain React hooks",
@@ -12,11 +14,43 @@ const PRESET_QUESTIONS = [
     "Explain system design basics",
 ];
 
+
 function MainChat() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeConversationId, setActiveConversationId] = useState(null);
+    const [conversations, setConversations] = useState([]);
     const { logout, user } = useAuth();
+
+
+    useEffect(() => {
+        const fetchConversations = async () => {
+            try {
+                const token = localStorage.getItem("token");
+
+                const response = await fetch(
+                    "https://chatbot-ai-api-owhv.onrender.com/api/conversations",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                setConversations(data.conversations);
+            } catch (error) {
+                console.error("Failed to fetch conversations:", error);
+            }
+        };
+
+        fetchConversations();
+    }, []);
 
     const createConversation = async (title) => {
         const token = localStorage.getItem("token");
@@ -45,6 +79,8 @@ function MainChat() {
     };
 
     const sendMessage = async (textToSend) => {
+        console.log("1. Question clicked:", textToSend);
+
         if (!textToSend.trim() || loading) return;
 
         const updatedMessages = [
@@ -60,10 +96,13 @@ function MainChat() {
 
             let conversationId = activeConversationId;
 
-            // Create conversation for the first message
+            console.log("2. Conversation ID:", conversationId);
+
             if (!conversationId) {
                 conversationId = await createConversation(textToSend);
             }
+
+            console.log("3. Sending to chat:", conversationId);
 
             const response = await fetch(
                 "https://chatbot-ai-api-owhv.onrender.com/api/chat",
@@ -80,11 +119,15 @@ function MainChat() {
                 }
             );
 
+            console.log("4. Response status:", response.status);
+
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
             const data = await response.json();
+
+            console.log("5. AI response:", data);
 
             setMessages([
                 ...updatedMessages,
@@ -98,19 +141,61 @@ function MainChat() {
             setLoading(false);
         }
     };
+    const loadConversation = async (conversationId) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `https://chatbot-ai-api-owhv.onrender.com/api/conversations/${conversationId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            console.log("Loaded conversation:", data);
+
+            setMessages(data.conversation.messages);
+            setActiveConversationId(conversationId);
+
+        } catch (error) {
+            console.error("Failed to load conversation:", error);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans">
-            <div className="max-w-4xl mx-auto min-h-screen flex flex-col px-4">
+        <div className="min-h-screen bg-slate-950 text-white font-sans flex">
+
+            <Sidebar
+                conversations={conversations}
+                activeConversationId={activeConversationId}
+                onNewChat={() => {
+                    setMessages([]);
+                    setActiveConversationId(null);
+                }}
+                onSelectConversation={loadConversation}
+            />
+
+            <main className="flex-1 max-w-4xl mx-auto min-h-screen flex flex-col px-4">
 
                 {/* Top Bar */}
                 <div className="flex justify-between items-center pt-6 px-2">
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-xs text-slate-400">
-                            <strong className="text-slate-200">{user?.name || user?.email}</strong>
+                            <strong className="text-slate-200">
+                                {user?.name || user?.email}
+                            </strong>
                         </span>
                     </div>
+
                     <button
                         onClick={logout}
                         className="text-xs bg-slate-900 border border-slate-800 hover:border-red-500/40 hover:text-red-400 px-3.5 py-1.5 rounded-xl transition-all"
@@ -121,6 +206,7 @@ function MainChat() {
 
                 <Header />
 
+                {/* Messages */}
                 <div className="flex-1 overflow-y-auto py-6">
                     {messages.length === 0 ? (
                         <PresetQuestions
@@ -130,7 +216,10 @@ function MainChat() {
                     ) : (
                         <div className="space-y-6">
                             {messages.map((msg, index) => (
-                                <ChatMessage key={index} message={msg} />
+                                <ChatMessage
+                                    key={index}
+                                    message={msg}
+                                />
                             ))}
                         </div>
                     )}
@@ -146,8 +235,12 @@ function MainChat() {
                     )}
                 </div>
 
-                <ChatInput onSendMessage={sendMessage} loading={loading} />
-            </div>
+                <ChatInput
+                    onSendMessage={sendMessage}
+                    loading={loading}
+                />
+
+            </main>
         </div>
     );
 }

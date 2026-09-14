@@ -1,24 +1,56 @@
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-export default function ChatMessage({ message }) {
-  const isUser = message.role === "user";
+function ChatMessage({ message }) {
+    const isUser = message.role === "user";
 
-  return (
-    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={`max-w-[80%] px-5 py-4 rounded-2xl ${
-          isUser
-            ? "bg-indigo-600 text-white rounded-br-md"
-            : "bg-slate-800 text-slate-200 rounded-bl-md"
-        }`}
-      >
-        <p className="text-xs text-slate-400 mb-2">
-          {isUser ? "You" : "AI Assistant"}
-        </p>
-        <div className="leading-7 prose prose-invert max-w-none">
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+    return (
+        <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+            <div
+                className={
+                    isUser
+                        ? "max-w-[80%] bg-indigo-600 px-4 py-3 rounded-2xl"
+                        : "max-w-[85%] text-slate-200"
+                }
+            >
+                {isUser ? (
+                    <p>{message.content}</p>
+                ) : (
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            code({ inline, className, children, ...props }) {
+                                const match = /language-(\w+)/.exec(
+                                    className || ""
+                                );
+
+                                return !inline && match ? (
+                                    <SyntaxHighlighter
+                                        style={oneDark}
+                                        language={match[1]}
+                                        PreTag="div"
+                                    >
+                                        {String(children).replace(/\n$/, "")}
+                                    </SyntaxHighlighter>
+                                ) : (
+                                    <code
+                                        className="bg-slate-800 px-1.5 py-0.5 rounded text-sm"
+                                        {...props}
+                                    >
+                                        {children}
+                                    </code>
+                                );
+                            },
+                        }}
+                    >
+                        {message.content}
+                    </ReactMarkdown>
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
+
+export default ChatMessage;
