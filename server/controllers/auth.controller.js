@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../model/user.model');
 
 
-const resigterUser = async (req, res) => {
+const registerUser = async (req, res) => {
 
     try {
         const { username, email, password } = req.body
@@ -18,7 +18,7 @@ const resigterUser = async (req, res) => {
 
 
         if (existingUser) {
-            res.status(409).json({ message: "Email already exists" })
+            return res.status(409).json({ message: "Email already exists" })
         }
         await User.create({
             username, email, password
@@ -42,13 +42,13 @@ const loginUser = async (req, res) => {
 
 
         if (!email || !password) {
-            return res.json(400).json({ message: "Email or Password are required" })
+            return res.status(400).json({ message: "Email or Password are required" })
         }
 
         const user = await User.findOne({ email })
 
         if (!user) {
-            return res.status(400).json({ message: "User Not found..." })
+            return res.status(401).json({ message: "Invalid email or password" })
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -78,7 +78,7 @@ const loginUser = async (req, res) => {
 
 
 module.exports = {
-    resigterUser,
+    registerUser,
     loginUser
 
 }

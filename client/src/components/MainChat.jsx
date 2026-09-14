@@ -11,6 +11,32 @@ function MainChat() {
     const [activeConversationId, setActiveConversationId] = useState(null);
     const { logout, user } = useAuth();
 
+    const createConversation = async (title) => {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+            "https://ai-chatbot-nt2h.onrender.com/api/conversations",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ title }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        setActiveConversationId(data.userConversation._id);
+
+        return data.userConversation._id;
+    };
+
     const sendMessage = async (textToSend) => {
         if (!textToSend.trim() || loading) return;
 
@@ -25,24 +51,39 @@ function MainChat() {
         try {
             const token = localStorage.getItem("token");
 
-            const response = await fetch("https://ai-chatbot-nt2h.onrender.com/api/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    conversationId: activeConversationId,
-                    messages: updatedMessages,
-                }),
-            });
+            let conversationId = activeConversationId;
 
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            // Create conversation for the first message
+            if (!conversationId) {
+                conversationId = await createConversation(textToSend);
+            }
+
+            const response = await fetch(
+                "https://ai-chatbot-nt2h.onrender.com/api/chat",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        conversationId,
+                        messages: updatedMessages,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
 
             const data = await response.json();
-            if (data.conversationId) setActiveConversationId(data.conversationId);
 
-            setMessages([...updatedMessages, { role: "assistant", content: data.message }]);
+            setMessages([
+                ...updatedMessages,
+                { role: "assistant", content: data.message }
+            ]);
+
         } catch (err) {
             console.error("Chat API Error:", err);
             setMessages(messages);

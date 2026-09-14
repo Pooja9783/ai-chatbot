@@ -51,8 +51,21 @@ app.use("/api/chat", chatRoutes);
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, () => {
-  console.log(`Server is listening from PORT:${PORT}`);
-  connectDB()
 
-})
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Server is listening from PORT:${PORT}`);
+    })
+
+
+  } catch (error) {
+    console.error("Failed to start server", error)
+
+  }
+}
+
+startServer()
+

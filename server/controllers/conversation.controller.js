@@ -8,24 +8,25 @@ const conversation = async (req, res) => {
 
         // Get title from request body
         const title = req.body.title
+
+
+        if (!title || typeof title !== "string" || !title.trim()) {
+            return res.status(400).json({
+                message: "Title is required"
+            })
+        }
+
         // create converstion
-        const userConverstion = await Conversations.create({
+        const userConversation = await Conversations.create({
             userId,
-            title,
+            title: title.trim(),
             messages: []
         })
 
-        if (!userConverstion) {
-            return res.status(403).json({
-                message: "Invalid parameters"
-            })
-        }
-
-
         // return response
         return res.status(201).json({
-            message: "Posted message successfully",
-            userConverstion
+            message: "Conversation created successfully",
+            userConversation
         })
 
     } catch {
@@ -35,53 +36,16 @@ const conversation = async (req, res) => {
     }
 }
 
-
-const conversationWithId = async (req, res) => {
-    try {
-        const conversationId = req.params.id
-        const userId = req.user.userId
-        const content = req.body.content
-
-
-        const conversation = await Conversations.findOne({
-            _id: conversationId,
-            userId,
-
-        })
-
-        if (!conversation) {
-            return res.status(404).json({
-                message: "conversation not found"
-            })
-        }
-
-        conversation.messages.push({
-            role: "user",
-            content
-        })
-
-        await conversation.save()
-
-
-        return res.status(200).json({
-            message: "Messages added successfully",
-            conversation
-        })
-
-
-    } catch {
-        return res.status(500).json({
-            message: "Something went wrong.."
-        })
-    }
-}
 
 const getConversation = async (req, res) => {
     try {
         const userId = req.user.userId
 
+        const conversations = await Conversations
+            .find({ userId })
+            .select("_id title updatedAt")
+            .sort({ updatedAt: -1 })
 
-        const conversations = await Conversations.find({ userId }).sort({ updateAt: -1 })
 
         return res.status(200).json({
             conversations
@@ -138,6 +102,12 @@ const deleteConversation = async (req, res) => {
         const userId = req.user.userId
         const conversationId = req.params.id
 
+        if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+            return res.status(404).json({
+                message: "Conversation not found"
+            });
+        }
+
         const conversation = await Conversations.findOneAndDelete({
             _id: conversationId,
             userId
@@ -165,4 +135,4 @@ const deleteConversation = async (req, res) => {
 }
 
 
-module.exports = { conversation, conversationWithId, getConversation, getConversationWithId, deleteConversation }
+module.exports = { conversation, getConversation, getConversationWithId, deleteConversation }
