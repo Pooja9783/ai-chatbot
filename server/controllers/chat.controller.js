@@ -1,5 +1,5 @@
 const Conversations = require("../model/conversation.model");
-const getResponsefromAI = require('../services/ChatService.js')
+const getResponsefromAI = require('../services/chatService.js')
 
 
 
