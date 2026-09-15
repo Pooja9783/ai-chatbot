@@ -9,9 +9,15 @@ router.post("/register", registerUser)
 router.post("/login", loginUser)
 router.get("/me", authMiddleware, (req, res) => {
     return res.status(200).json({
-        message: "You are authenticated",
-        user: req.user
-    })
+        message: "You have logged in successfully...",
+        token,
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        }
+    });
 })
 
 module.exports = router
