@@ -5,6 +5,7 @@ import ChatInput from "./ChatInput";
 import { useAuth } from "../context/AuthContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import ConfirmModal from "./ConfirmModal";
 
 
 const PRESET_QUESTIONS = [
@@ -20,6 +21,8 @@ function MainChat() {
     const [loading, setLoading] = useState(false);
     const [activeConversationId, setActiveConversationId] = useState(null);
     const [conversations, setConversations] = useState([]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [conversationToDelete, setConversationToDelete] = useState(null);
     const { logout, user } = useAuth();
 
 
@@ -73,7 +76,16 @@ function MainChat() {
 
         const data = await response.json();
 
+        const newConversation = data.userConversation;
+
+
         setActiveConversationId(data.userConversation._id);
+
+        setConversations((prev) => [
+            newConversation,
+            ...prev,
+        ]);
+
 
         return data.userConversation._id;
     };
@@ -141,6 +153,7 @@ function MainChat() {
             setLoading(false);
         }
     };
+
     const loadConversation = async (conversationId) => {
         try {
             const token = localStorage.getItem("token");
@@ -170,6 +183,46 @@ function MainChat() {
         }
     };
 
+
+    const deleteConversation = async (conversationId) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `https://chatbot-ai-api-owhv.onrender.com/api/conversations/${conversationId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            // Remove from sidebar
+            setConversations((prev) =>
+                prev.filter((conversation) => conversation._id !== conversationId)
+            );
+
+            // If deleted conversation was active, clear chat
+            if (activeConversationId === conversationId) {
+                setMessages([]);
+                setActiveConversationId(null);
+            }
+
+        } catch (error) {
+            console.error("Failed to delete conversation:", error);
+        }
+    };
+
+    const handleDeleteClick = (conversationId) => {
+        setConversationToDelete(conversationId);
+        setShowDeleteModal(true);
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 text-white font-sans flex">
 
@@ -181,6 +234,7 @@ function MainChat() {
                     setActiveConversationId(null);
                 }}
                 onSelectConversation={loadConversation}
+                deleteConversation={handleDeleteClick}
             />
 
             <main className="flex-1 max-w-4xl mx-auto min-h-screen flex flex-col px-4">
@@ -241,6 +295,19 @@ function MainChat() {
                 />
 
             </main>
+            {showDeleteModal && (
+                <ConfirmModal
+                    onCancel={() => {
+                        setShowDeleteModal(false);
+                        setConversationToDelete(null);
+                    }}
+                    onConfirm={async () => {
+                        await deleteConversation(conversationToDelete);
+                        setShowDeleteModal(false);
+                        setConversationToDelete(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

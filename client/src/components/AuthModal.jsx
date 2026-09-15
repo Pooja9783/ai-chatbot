@@ -1,5 +1,3 @@
-// src/components/AuthModal.jsx
-
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -28,14 +26,13 @@ export default function AuthModal() {
 
     try {
       if (isLogin) {
-        // Logging in triggers state change in AuthContext -> loads Chatbot
         await login(email, password);
       } else {
-        // Register user -> show success banner & switch to login view
         await register(name, email, password);
-        setSuccessMsg("Account created successfully! Please sign in.");
+
+        setSuccessMsg("Account created successfully. Please sign in.");
         setIsLogin(true);
-        setPassword(""); // clear password for login step
+        setPassword("");
       }
     } catch (err) {
       setError(err.message || "Authentication failed. Please try again.");
@@ -45,130 +42,196 @@ export default function AuthModal() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      
-      {/* Background Blobs */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#0F0F10] text-white flex">
 
-      {/* Glassmorphic Container */}
-      <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 shadow-2xl relative z-10">
-        
-        {/* Brand Badge */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/25 mb-4">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+      {/* Left Side */}
+      <section className="hidden lg:flex lg:w-[52%] bg-[#151516] border-r border-[#29292B] p-12 flex-col justify-between">
+
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#F97360] flex items-center justify-center">
+            <span className="text-[#171717] font-bold">AI</span>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            {isLogin ? "Welcome Back" : "Join the Platform"}
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            {isLogin
-              ? "Sign in to access your AI Chatbot"
-              : "Create an account to get started"}
+
+          <div>
+            <p className="text-white font-semibold">
+              AI Learning Assistant
+            </p>
+
+            <p className="text-xs text-[#77777C] mt-0.5">
+              Software Engineering
+            </p>
+          </div>
+        </div>
+
+
+        {/* Main Content */}
+        <div className="max-w-lg">
+
+          <h1 className="text-5xl xl:text-6xl font-semibold leading-tight tracking-tight text-white">
+            Software Engineering
+            <br />
+
+            <span className="text-[#F97360]">
+              Focused Assistant
+            </span>
+          </h1>
+
+          <p className="mt-7 text-lg leading-relaxed text-[#96969C] max-w-md">
+            A practical assistant for learning,
+            problem-solving, and building software.
+          </p>
+
+        </div>
+
+
+        {/* Bottom */}
+        <div>
+          <div className="w-10 h-px bg-[#F97360] mb-4" />
+
+          <p className="text-xs text-[#5F5F64]">
+            Learn • Practice • Build
           </p>
         </div>
 
-        {/* Sliding Tab Control */}
-        <div className="relative flex bg-slate-950/60 p-1.5 rounded-2xl border border-slate-800/60 mb-6">
-          <div
-            className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-indigo-600 rounded-xl transition-all duration-300 ease-in-out shadow-md ${
-              isLogin ? "left-1.5" : "left-[calc(50%+3px)]"
-            }`}
-          />
-          <button
-            type="button"
-            onClick={() => handleSwitchTab(true)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl relative z-10 transition-colors ${
-              isLogin ? "text-white" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSwitchTab(false)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl relative z-10 transition-colors ${
-              !isLogin ? "text-white" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Register
-          </button>
-        </div>
+      </section>
+      {/* Right Side */}
+      <section className="flex-1 flex items-center justify-center px-6 py-12">
 
-        {/* Dynamic Success Banner */}
-        {successMsg && (
-          <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-xs text-center font-medium">
-            {successMsg}
+        <div className="w-full max-w-[400px]">
+
+          {/* Mobile Brand */}
+          <div className="lg:hidden flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 rounded-xl bg-[#F97360] flex items-center justify-center">
+              <span className="text-[#171717] font-bold">AI</span>
+            </div>
+
+            <span className="font-semibold">
+              AI Learning Assistant
+            </span>
           </div>
-        )}
 
-        {/* Dynamic Error Banner */}
-        {error && (
-          <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs text-center font-medium">
-            {error}
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h2>
+
+            <p className="text-sm text-[#85858B] mt-2">
+              {isLogin
+                ? "Continue your engineering journey."
+                : "Start building your engineering skills."}
+            </p>
           </div>
-        )}
 
-        {/* Auth Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {!isLogin && (
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-300 ml-1">
-                Username
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                required={!isLogin}
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-              />
+          {/* Tabs */}
+          <div className="flex gap-7 border-b border-[#29292B] mb-8">
+            <button
+              type="button"
+              onClick={() => handleSwitchTab(true)}
+              className={`pb-3 text-sm font-medium transition ${isLogin
+                ? "text-white border-b-2 border-[#F97360]"
+                : "text-[#66666B] hover:text-white"
+                }`}
+            >
+              Sign in
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchTab(false)}
+              className={`pb-3 text-sm font-medium transition ${!isLogin
+                ? "text-white border-b-2 border-[#F97360]"
+                : "text-[#66666B] hover:text-white"
+                }`}
+            >
+              Register
+            </button>
+          </div>
+
+          {/* Messages */}
+          {successMsg && (
+            <div className="mb-5 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-sm">
+              {successMsg}
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-slate-300 ml-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="developer@company.com"
-              required
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-            />
-          </div>
+          {error && (
+            <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-slate-300 ml-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-            />
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-medium text-sm py-3 rounded-xl transition shadow-lg shadow-indigo-600/25 mt-2 flex items-center justify-center gap-2"
-          >
-            {loading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
-          </button>
-        </form>
+            {!isLogin && (
+              <div>
+                <label className="block text-sm text-[#D4D4D8] mb-2">
+                  Username
+                </label>
 
-      </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  required
+                  className="w-full bg-[#151516] border border-[#303033] rounded-lg px-4 py-3 text-sm text-white placeholder:text-[#55555A] outline-none focus:border-[#F97360] transition"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm text-[#D4D4D8] mb-2">
+                Email
+              </label>
+
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full bg-[#151516] border border-[#303033] rounded-lg px-4 py-3 text-sm text-white placeholder:text-[#55555A] outline-none focus:border-[#F97360] transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-[#D4D4D8] mb-2">
+                Password
+              </label>
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                className="w-full bg-[#151516] border border-[#303033] rounded-lg px-4 py-3 text-sm text-white placeholder:text-[#55555A] outline-none focus:border-[#F97360] transition"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#F97360] hover:bg-[#FB806E] disabled:bg-[#303033] disabled:text-[#66666B] text-[#171717] font-semibold py-3 rounded-lg transition"
+            >
+              {loading
+                ? "Please wait..."
+                : isLogin
+                  ? "Sign In"
+                  : "Create Account"}
+            </button>
+
+          </form>
+
+          <p className="text-xs text-[#5F5F64] text-center mt-8">
+            Your conversations and learning progress are saved to your account.
+          </p>
+
+        </div>
+      </section>
     </div>
   );
 }
