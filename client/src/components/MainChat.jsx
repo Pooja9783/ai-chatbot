@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import ConfirmModal from "./ConfirmModal";
-
+import "./styles/mainChat.css"
 
 const PRESET_QUESTIONS = [
     "Explain React hooks",
@@ -15,7 +15,6 @@ const PRESET_QUESTIONS = [
     "Explain system design basics",
 ];
 
-
 function MainChat() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -23,8 +22,8 @@ function MainChat() {
     const [conversations, setConversations] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState(null);
-    const { logout, user } = useAuth();
 
+    const { logout, user } = useAuth();
 
     useEffect(() => {
         const fetchConversations = async () => {
@@ -45,7 +44,6 @@ function MainChat() {
                 }
 
                 const data = await response.json();
-
                 setConversations(data.conversations);
             } catch (error) {
                 console.error("Failed to fetch conversations:", error);
@@ -75,29 +73,27 @@ function MainChat() {
         }
 
         const data = await response.json();
-
         const newConversation = data.userConversation;
 
-
-        setActiveConversationId(data.userConversation._id);
+        setActiveConversationId(newConversation._id);
 
         setConversations((prev) => [
             newConversation,
             ...prev,
         ]);
 
-
-        return data.userConversation._id;
+        return newConversation._id;
     };
 
     const sendMessage = async (textToSend) => {
-        console.log("1. Question clicked:", textToSend);
-
         if (!textToSend.trim() || loading) return;
 
         const updatedMessages = [
             ...messages,
-            { role: "user", content: textToSend },
+            {
+                role: "user",
+                content: textToSend,
+            },
         ];
 
         setMessages(updatedMessages);
@@ -108,13 +104,9 @@ function MainChat() {
 
             let conversationId = activeConversationId;
 
-            console.log("2. Conversation ID:", conversationId);
-
             if (!conversationId) {
                 conversationId = await createConversation(textToSend);
             }
-
-            console.log("3. Sending to chat:", conversationId);
 
             const response = await fetch(
                 "https://chatbot-ai-api-owhv.onrender.com/api/chat",
@@ -131,21 +123,19 @@ function MainChat() {
                 }
             );
 
-            console.log("4. Response status:", response.status);
-
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
             const data = await response.json();
 
-            console.log("5. AI response:", data);
-
             setMessages([
                 ...updatedMessages,
-                { role: "assistant", content: data.message }
+                {
+                    role: "assistant",
+                    content: data.message,
+                },
             ]);
-
         } catch (err) {
             console.error("Chat API Error:", err);
             setMessages(messages);
@@ -173,16 +163,12 @@ function MainChat() {
 
             const data = await response.json();
 
-            console.log("Loaded conversation:", data);
-
             setMessages(data.conversation.messages);
             setActiveConversationId(conversationId);
-
         } catch (error) {
             console.error("Failed to load conversation:", error);
         }
     };
-
 
     const deleteConversation = async (conversationId) => {
         try {
@@ -202,17 +188,17 @@ function MainChat() {
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
-            // Remove from sidebar
             setConversations((prev) =>
-                prev.filter((conversation) => conversation._id !== conversationId)
+                prev.filter(
+                    (conversation) =>
+                        conversation._id !== conversationId
+                )
             );
 
-            // If deleted conversation was active, clear chat
             if (activeConversationId === conversationId) {
                 setMessages([]);
                 setActiveConversationId(null);
             }
-
         } catch (error) {
             console.error("Failed to delete conversation:", error);
         }
@@ -224,8 +210,9 @@ function MainChat() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans flex">
+        <div className="h-screen overflow-hidden bg-[#0F0F10] text-white flex">
 
+            {/* Sidebar */}
             <Sidebar
                 conversations={conversations}
                 activeConversationId={activeConversationId}
@@ -237,64 +224,89 @@ function MainChat() {
                 deleteConversation={handleDeleteClick}
             />
 
-            <main className="flex-1 max-w-4xl mx-auto min-h-screen flex flex-col px-4">
+            {/* Chat */}
+            <main className="flex-1 min-w-0 h-screen flex flex-col">
 
-                {/* Top Bar */}
-                <div className="flex justify-between items-center pt-6 px-2">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-xs text-slate-400">
-                            <strong className="text-slate-200">
-                                {user?.name || user?.email}
-                            </strong>
-                        </span>
+                {/* Minimal top bar */}
+                <header className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-[#29292B]">
+
+                    <div>
+                        <h1 className="text-sm font-medium text-[#D4D4D8]">
+                            AI Knowledge Assistant
+                        </h1>
                     </div>
 
                     <button
                         onClick={logout}
-                        className="text-xs bg-slate-900 border border-slate-800 hover:border-red-500/40 hover:text-red-400 px-3.5 py-1.5 rounded-xl transition-all"
+                        className="text-xs text-[#77777C] hover:text-white transition"
                     >
-                        Sign Out
+                        {user?.username || user?.email}
+                        <span className="mx-2 text-[#3A3A3D]">·</span>
+                        Sign out
                     </button>
-                </div>
 
-                <Header />
+                </header>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto py-6">
-                    {messages.length === 0 ? (
-                        <PresetQuestions
-                            questions={PRESET_QUESTIONS}
-                            onSelectQuestion={sendMessage}
-                        />
-                    ) : (
-                        <div className="space-y-6">
-                            {messages.map((msg, index) => (
-                                <ChatMessage
-                                    key={index}
-                                    message={msg}
-                                />
-                            ))}
-                        </div>
-                    )}
+                <div className="flex-1 min-h-0 overflow-y-auto">
 
-                    {loading && (
-                        <div className="flex justify-start my-6">
-                            <div className="bg-slate-900 px-5 py-4 rounded-2xl border border-slate-800">
-                                <p className="text-slate-400 animate-pulse text-sm">
-                                    AI Assistant is thinking...
+                    <div className="max-w-3xl mx-auto px-6 py-10">
+
+                        {messages.length === 0 ? (
+                            <div className="pt-16">
+                                <h2 className="text-3xl font-semibold tracking-tight text-white">
+                                    How can I help you?
+                                </h2>
+
+                                <p className="mt-2 text-sm text-[#77777C]">
+                                    Ask about software engineering, AI, or system design.
                                 </p>
+
+                                <div className="mt-8">
+                                    <PresetQuestions
+                                        questions={PRESET_QUESTIONS}
+                                        onSelectQuestion={sendMessage}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="space-y-10">
+                                {messages.map((msg, index) => (
+                                    <ChatMessage
+                                        key={index}
+                                        message={msg}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {loading && (
+                            <div className="mt-8 flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-[#F97360] animate-pulse" />
+
+                                <span className="text-sm text-[#77777C]">
+                                    Thinking...
+                                </span>
+                            </div>
+                        )}
+
+                    </div>
+
                 </div>
 
-                <ChatInput
-                    onSendMessage={sendMessage}
-                    loading={loading}
-                />
+                {/* Input */}
+                <div className="shrink-0 px-6 pb-5">
+                    <div className="max-w-3xl mx-auto">
+                        <ChatInput
+                            onSendMessage={sendMessage}
+                            loading={loading}
+                        />
+                    </div>
+                </div>
 
             </main>
+
+            {/* Delete Modal */}
             {showDeleteModal && (
                 <ConfirmModal
                     onCancel={() => {
@@ -308,8 +320,9 @@ function MainChat() {
                     }}
                 />
             )}
+
         </div>
     );
 }
 
-export default MainChat
+export default MainChat;
