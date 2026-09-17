@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthModal() {
+  const navigate = useNavigate();
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,6 +30,11 @@ export default function AuthModal() {
     try {
       if (isLogin) {
         await login(email, password);
+
+        console.log("LOGIN SUCCESS - navigating to chat");
+
+        navigate("/chat");
+
       } else {
         await register(name, email, password);
 

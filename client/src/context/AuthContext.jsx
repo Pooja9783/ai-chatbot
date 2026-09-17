@@ -22,8 +22,16 @@ export const AuthProvider = ({ children }) => {
           },
         });
 
+        console.log()
+
         if (response.ok) {
           const data = await response.json();
+          localStorage.setItem("token", data.token);
+
+
+
+          setUser(data.user);
+
           setUser(data.user);
         } else {
           // Token invalid or expired
@@ -50,11 +58,17 @@ export const AuthProvider = ({ children }) => {
 
     const data = await response.json();
 
+    console.log("data", data)
+
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
     }
 
     localStorage.setItem("token", data.token);
+
+
+    console.log("LOGIN USER:", data.user);
+    console.log("LOGIN TOKEN:", data.token);
     setUser(data.user);
   };
 
