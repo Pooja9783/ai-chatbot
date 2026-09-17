@@ -31,8 +31,6 @@ export default function AuthModal() {
       if (isLogin) {
         await login(email, password);
 
-        console.log("LOGIN SUCCESS - navigating to chat");
-
         navigate("/chat");
 
       } else {

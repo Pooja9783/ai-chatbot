@@ -9,9 +9,6 @@ import { useAuth } from "./context/AuthContext";
 export default function App() {
     const { user, loading } = useAuth();
 
-    console.log("APP USER:", user);
-    console.log("APP LOADING:", loading);
-
     if (loading) {
         return null;
     }
