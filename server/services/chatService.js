@@ -25,23 +25,18 @@ const getResponsefromAI = async (messages) => {
         );
 
         if (!openRouterResponse.ok) {
-            throw new Error(
-                `OpenRouter error: ${openRouterResponse.status}`
-            );
+            throw new Error(`OpenRouter error: ${openRouterResponse.status}`);
         }
 
         const data = await openRouterResponse.json();
 
-        const answer =
-            data.choices?.[0]?.message?.content;
-
+        const answer = data.choices?.[0]?.message?.content;
 
         return answer
 
-
     } catch (error) {
         console.error(error);
-        
+
         throw Error(error)
     }
 }
