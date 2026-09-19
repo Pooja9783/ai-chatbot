@@ -1,6 +1,5 @@
 const restrictionPrompt = require("../utils/systemPrompt");
 
-
 const getResponsefromAI = async (messages) => {
     try {
         const openRouterResponse = await fetch(
@@ -36,7 +35,6 @@ const getResponsefromAI = async (messages) => {
 
     } catch (error) {
         console.error(error);
-
         throw Error(error)
     }
 }
