@@ -1,7 +1,7 @@
 const restrictionPrompt = require("../utils/systemPrompt");
 const { sleep, isRetryableStatus } = require('../utils/helper')
 
-const getResponsefromAI = async (messages) => {
+const getResponsefromAI = async (messages, onChunk) => {
 
     const MAX_RETRIES = 3
 
@@ -47,10 +47,11 @@ const getResponsefromAI = async (messages) => {
                 throw error;
             }
 
-            const reader = response.body.getReader();
+            const reader = openRouterResponse.body.getReader();
             const decoder = new TextDecoder();
 
             let fullAnswer = "";
+            let buffer = "";
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -59,8 +60,29 @@ const getResponsefromAI = async (messages) => {
 
                 const chunk = decoder.decode(value, { stream: true });
 
-                // We'll parse the SSE data here
-                console.log(chunk);
+                buffer += chunk;
+
+                const lines = buffer.split("\n");
+
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (!line.startsWith("data:")) continue;
+
+                    const data = line.slice(5).trim();
+
+                    if (data === "[DONE]") continue;
+
+                    const parsed = JSON.parse(data);
+
+                    const content = parsed.choices?.[0]?.delta?.content;
+
+                    if (!content) continue;
+
+                    fullAnswer += content;
+
+                    onChunk(content);
+                }
             }
 
             return fullAnswer;

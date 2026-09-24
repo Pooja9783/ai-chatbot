@@ -1,5 +1,5 @@
 const Conversations = require("../model/conversation.model");
-const {getResponsefromAI} = require('../services/chatService')
+const { getResponsefromAI } = require('../services/chatService')
 
 
 
@@ -65,22 +65,49 @@ const chatController = async (req, res) => {
 
     await conversation.save();
 
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    res.flushHeaders();
+
+    let fullAnswer = "";
+
     //6. Call AI
-    const answer = await getResponsefromAI(messages)
+    await getResponsefromAI(messages, (chunk) => {
+      fullAnswer += chunk;
+
+      res.write(
+        `data: ${JSON.stringify({ content: chunk })}\n\n`
+      );
+    });
 
     conversation.messages.push({
       role: "assistant",
-      content: answer
+      content: fullAnswer
     });
 
     await conversation.save();
 
-    return res.status(200).json({
-      message: answer,
-    });
+    res.write(
+      `data: ${JSON.stringify({ done: true })}\n\n`
+    );
+
+    res.end();
   }
   catch (err) {
-    console.log(err);
+    console.error(err);
+
+    if (res.headersSent) {
+      res.write(
+        `data: ${JSON.stringify({
+          error: "Something went wrong"
+        })}\n\n`
+      );
+
+      res.end();
+      return;
+    }
 
     return res.status(500).json({
       message: "Something went wrong",
