@@ -127,15 +127,68 @@ function MainChat() {
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
-            const data = await response.json();
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            let buffer = "";
+            let assistantAnswer = "";
+
 
             setMessages([
                 ...updatedMessages,
                 {
                     role: "assistant",
-                    content: data.message,
+                    content: "",
                 },
             ]);
+
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    buffer += decoder.decode();
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+
+                const events = buffer.split("\n\n");
+
+                // Keep the incomplete event for the next chunk
+                buffer = events.pop();
+
+                for (const event of events) {
+                    const line = event.trim();
+
+                    if (!line.startsWith("data:")) continue;
+
+                    const data = line.slice(5).trim();
+
+                    if (!data) continue;
+
+                    const parsed = JSON.parse(data);
+
+                    if (parsed.content) {
+                        assistantAnswer += parsed.content;
+
+                        setMessages((prev) => {
+                            const updated = [...prev];
+
+                            updated[updated.length - 1] = {
+                                role: "assistant",
+                                content: assistantAnswer,
+                            };
+
+                            return updated;
+                        });
+                    }
+
+                    if (parsed.done) {
+                        console.log("Streaming completed");
+                    }
+                }
+            }
         } catch (err) {
             console.error("Chat API Error:", err);
             setMessages(messages);
