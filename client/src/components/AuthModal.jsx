@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AuthModal() {
   const navigate = useNavigate();
+  const { login, register } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -13,7 +14,6 @@ export default function AuthModal() {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login, register } = useAuth();
 
   const handleSwitchTab = (toLogin) => {
     setError("");

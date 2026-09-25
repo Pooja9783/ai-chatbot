@@ -5,6 +5,8 @@ const getResponsefromAI = async (messages, onChunk) => {
 
     const MAX_RETRIES = 3
 
+    const recentMessages = messages.slice(-20)
+
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         const controller = new AbortController();
 
@@ -31,7 +33,7 @@ const getResponsefromAI = async (messages, onChunk) => {
                                 role: "system",
                                 content: restrictionPrompt
                             },
-                            ...messages,
+                            ...recentMessages,
                         ],
                     }),
                 }
